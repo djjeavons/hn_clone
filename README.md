@@ -14,10 +14,10 @@ The database, api consumption software, GraphQL and webserver will all be runnin
 
 There is a .env file required that contains the following keys.
 
-POSTGRES_USER = _"Your postgres user name"_,
+POSTGRES*USER = *"Your postgres user name"_,
 POSTGRES_PASSWORD = _"Your postgres password"_,
 POSTGRES_HOST = _"The host name/ip address of the postgres server"_,
 POSTGRES_PORT = _"The port of the postgres server"_,
-POSTGRES_DATABASE = _"The name of the database_,
+POSTGRES_DATABASE = _"The name of the database\_,
 
 **To do: Update this readme with more pertinent information as the project develops.**

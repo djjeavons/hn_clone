@@ -7,26 +7,44 @@ async function saveStory(storyData) {
     return result;
   }
 
-  if (storyExists(storyData.id) === true) {
+  if ((await storyExists(storyData.id)) === true) {
     result = await updateStory(storyData);
   } else {
     result = await createStory(storyData);
-    console.log(`${result} -- ${storyData.title}`);
   }
 
   return result;
 }
 
 async function storyExists(storyId) {
-  return false;
+  const result = await db.query(
+    'SELECT COUNT(id) As "rowCount" FROM "Stories" WHERE id = $1',
+    [storyId]
+  );
+
+  if (result.rows[0] && parseInt(result.rows[0].rowCount) === 1) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
-async function updateStory(storyData) {}
+async function updateStory(storyData) {
+  const updateStatement =
+    'UPDATE "Stories" SET deleted = $2, type = $3, by = $4, time = $5, text = $6, dead = $7, parent = $8, url = $9, score = $10, title = $11, descendants = $12 WHERE id = $1';
+
+  return await executeStatement(updateStatement, storyData);
+}
 
 async function createStory(storyData) {
   const insertStatement =
     'INSERT INTO "Stories" (id, deleted, type, by, time, text, dead, parent, url, score, title, descendants) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)';
-  const insertParameters = [
+
+  return await executeStatement(insertStatement, storyData);
+}
+
+async function executeStatement(statement, storyData) {
+  const parameters = [
     storyData.id,
     storyData.deleted,
     storyData.type,
@@ -41,8 +59,7 @@ async function createStory(storyData) {
     storyData.descendants,
   ];
 
-  const result = await db.query(insertStatement, insertParameters);
-
+  const result = await db.query(statement, parameters);
   return result.rowCount;
 }
 
