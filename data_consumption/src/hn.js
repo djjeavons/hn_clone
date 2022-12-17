@@ -4,7 +4,7 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const chalk = require("chalk");
 const { Command, Option } = require("commander");
 const api = require("./lib/api");
-const story = require("./lib/dal/story");
+const item = require("./lib/dal/item");
 const comment = require("./lib/dal/comment");
 
 const log = console.log;
@@ -33,6 +33,7 @@ async function main() {
         "new",
         "ask",
         "show",
+        "job",
         "ALL",
       ])
     )
@@ -56,8 +57,7 @@ async function main() {
           );
         } else {
           const itemToRefresh = parseInt(program.args[1]);
-          // Do the refreshing call
-          console.log(`Refresh the item: ${itemToRefresh}`);
+          refreshItem(itemToRefresh);
         }
         break;
 
@@ -82,63 +82,140 @@ async function main() {
           latest = true;
         }
 
-        // Do the get or latest get here
-        console.log(`Get latest: ${latest} for type: ${type}`);
+        await getItems(type, latest);
         break;
     }
   }
 }
 
-async function processTopStories() {
-  log(chalk.yellow("Start processing top stories"));
+async function refreshItem(itemId) {
+  log(chalk.blueBright(`=> Refreshing item ${itemId}`));
 
-  let topStoriesList = [];
+  let result = 0;
+  let data = {};
 
   try {
-    topStoriesList = await api.fetchData(process.env.HN_TOP_STORIES_URL);
-  } catch (error) {
-    log(chalk.red(`Error fetching top stories list: ${error.message}`));
+    data = await api.fetchItem(itemId);
+    result = await item.saveItem(data);
+  } catch (err) {
+    log(chalk.redBright(`Error: ${err.message}`));
+  }
+
+  if (result === 0) {
+    log(chalk.redBright(`${itemId} not found`));
+  } else {
+    log(chalk.yellow(`Refreshing comments for ${itemId}`));
+    await processComments(data.type, data);
+    log(chalk.blueBright(`=> Item refreshed`));
+  }
+}
+
+async function getItems(type, latest) {
+  log(
+    chalk.blueBright(
+      `=> Start processing ${type} stories (latest set to ${latest})`
+    )
+  );
+
+  let url = "";
+  let typeToFilter = "story";
+
+  switch (type) {
+    case "top":
+      url = process.env.HN_TOP_STORIES_URL;
+      break;
+    case "best":
+      url = process.env.HN_BEST_STORIES_URL;
+      break;
+    case "new":
+      url = process.env.HN_NEW_STORIES_URL;
+      break;
+    case "ask":
+      url = process.env.HN_ASK_STORIES_URL;
+      typeToFilter = "ask";
+      break;
+    case "show":
+      url = process.env.HN_SHOW_STORIES_URL;
+      typeToFilter = "show";
+      break;
+    case "job":
+      url = process.env.HN_JOB_STORIES_URL;
+      typeToFilter = "job";
+      break;
+    default:
+      break;
+  }
+
+  let originalList = [];
+
+  try {
+    originalList = await api.fetchData(url);
+  } catch (err) {
+    log(chalk.redBright(`Error getting items from ${url}: ${err.message}`));
     return;
   }
 
-  log(chalk.blue(`Fetched ${topStoriesList.length.toString()} top stories.`));
+  let finalList = [];
 
-  if (topStoriesList) {
-    let index = 0;
-    for (const item in topStoriesList) {
-      index++;
+  if (latest) {
+    const maxItemId = await item.itemMax(typeToFilter);
+
+    if (isNaN(maxItemId) || maxItemId === 0) {
       log(
-        chalk.green(
-          `Processing story ${index.toString()} of ${topStoriesList.length.toString()}`
+        chalk.redBright(
+          `Error: No records exist for ${type}. Try again without the -l argument`
         )
       );
-
-      let currentStory = {};
-
-      try {
-        currentStory = await api.fetchItem(topStoriesList[item]);
-        if (currentStory) {
-          await story.saveStory(currentStory);
-        }
-      } catch (error) {
-        log(
-          chalk.red(
-            `Error fetching item ${topStoriesList[item].id}: ${error.message}`
-          )
-        );
-      }
-
-      if (currentStory) {
-        try {
-        } catch (error) {
-          log(chalk.red(`Error processing comment: ${error.message}`));
-        }
-        await processComments("Story", currentStory);
-      }
+      return;
     }
+
+    finalList = originalList.filter((id) => id > maxItemId);
+  } else {
+    finalList = originalList;
   }
 
-  log(chalk.yellow("Completed processing top stories."));
+  if (finalList.length === 0) {
+    log(chalk.redBright(`No items to process for ${type} stories`));
+    return;
+  }
+
+  await processItems(finalList, typeToFilter);
+}
+
+async function processItems(items, type) {
+  log(
+    chalk.blueBright(`=> Processing (${items.length.toString()} items) stories`)
+  );
+
+  for (let i = 0; i < items.length; i++) {
+    log(
+      chalk.yellow(
+        `Processing ${(
+          i + 1
+        ).toString()} of ${items.length.toString()} ${type} stories`
+      )
+    );
+
+    let currentStory = {};
+
+    try {
+      currentStory = await api.fetchItem(items[i]);
+      if (currentStory) {
+        await item.saveItem(currentStory);
+      }
+    } catch (error) {
+      log(
+        chalk.red(
+          `Error fetching and saving item ${items[i].id}: ${error.message}`
+        )
+      );
+    }
+
+    log(chalk.green(`==> Processing comments...`));
+    await processComments(type, currentStory);
+  }
+
+  log(chalk.blueBright(`=> Completed processing ${type} stories`));
 }
 
 async function processComments(parentType, itemData) {
@@ -167,5 +244,3 @@ async function processComments(parentType, itemData) {
     }
   }
 }
-
-async function configureProgram() {}
