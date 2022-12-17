@@ -4,7 +4,6 @@ const chalk = require("chalk");
 const api = require("./lib/api");
 const story = require("./lib/dal/story");
 const comment = require("./lib/dal/comment");
-const threadSleep = require("thread-sleep");
 
 const log = console.log;
 
@@ -12,12 +11,12 @@ main();
 
 // Entry point to the application. Allows for async/await
 async function main() {
-  log(chalk.yellow("Start processing top stories"));
   await processTopStories();
-  log(chalk.yellow("Completed processing top stories."));
 }
 
 async function processTopStories() {
+  log(chalk.yellow("Start processing top stories"));
+
   let topStoriesList = [];
 
   try {
@@ -30,7 +29,9 @@ async function processTopStories() {
   log(chalk.blue(`Fetched ${topStoriesList.length.toString()} top stories.`));
 
   if (topStoriesList) {
-    topStoriesList.map(async (e, index) => {
+    let index = 0;
+    for (const item in topStoriesList) {
+      index++;
       log(
         chalk.green(
           `Processing story ${index.toString()} of ${topStoriesList.length.toString()}`
@@ -40,27 +41,29 @@ async function processTopStories() {
       let currentStory = {};
 
       try {
-        currentStory = await api.fetchItem(e);
+        currentStory = await api.fetchItem(topStoriesList[item]);
         if (currentStory) {
           await story.saveStory(currentStory);
         }
       } catch (error) {
-        log(chalk.red(`Error fetching item ${e.id}: ${error.message}`));
-        threadSleep(2000);
+        log(
+          chalk.red(
+            `Error fetching item ${topStoriesList[item].id}: ${error.message}`
+          )
+        );
       }
 
       if (currentStory) {
         try {
-          log(
-            chalk.blue(
-              `Processing comments for story ${currentStory.id.toString()}`
-            )
-          );
-        } catch (error) {}
+        } catch (error) {
+          log(chalk.red(`Error processing comment: ${error.message}`));
+        }
         await processComments("Story", currentStory);
       }
-    });
+    }
   }
+
+  log(chalk.yellow("Completed processing top stories."));
 }
 
 async function processComments(parentType, itemData) {
@@ -70,15 +73,14 @@ async function processComments(parentType, itemData) {
 
   let currentComment = {};
 
-  itemData.kids.map(async (e) => {
+  for (const commentIndex in itemData.kids) {
     try {
-      currentComment = await api.fetchItem(e);
+      currentComment = await api.fetchItem(itemData.kids[commentIndex]);
       if (currentComment) {
         await comment.saveComment(currentComment, parentType);
       }
     } catch (error) {
-      log(chalk.red(`Error fetching comment ${e.id}: ${error.message}`));
-      threadSleep(2000);
+      log(chalk.red(`Error fetching comment: ${error.message}`));
     }
 
     if (
@@ -88,5 +90,5 @@ async function processComments(parentType, itemData) {
     ) {
       await processComments("Comment", currentComment);
     }
-  });
+  }
 }
