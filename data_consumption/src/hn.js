@@ -6,6 +6,7 @@ const { Command, Option } = require("commander");
 const api = require("./lib/api");
 const item = require("./lib/dal/item");
 const comment = require("./lib/dal/comment");
+const logger = require("./lib/logger");
 
 const log = console.log;
 const program = new Command();
@@ -115,6 +116,9 @@ async function getItems(type, latest) {
       `=> Start processing ${type} stories (latest set to ${latest})`
     )
   );
+  logger.logToFile(
+    `Start processing ${type} stories (latest set to ${latest})`
+  );
 
   let url = "";
   let typeToFilter = "story";
@@ -151,6 +155,7 @@ async function getItems(type, latest) {
     originalList = await api.fetchData(url);
   } catch (err) {
     log(chalk.redBright(`Error getting items from ${url}: ${err.message}`));
+    logger.logToFile(`Error getting items from ${url}: ${err.message}`);
     return;
   }
 
@@ -165,6 +170,9 @@ async function getItems(type, latest) {
           `Error: No records exist for ${type}. Try again without the -l argument`
         )
       );
+      logger.logToFile(
+        `Error: No records exist for ${type}. Try again without the -l argument`
+      );
       return;
     }
 
@@ -175,6 +183,7 @@ async function getItems(type, latest) {
 
   if (finalList.length === 0) {
     log(chalk.redBright(`No items to process for ${type} stories`));
+    logger.logToFile(`No items to process for ${type} stories`);
     return;
   }
 
@@ -185,6 +194,7 @@ async function processItems(items, type) {
   log(
     chalk.blueBright(`=> Processing (${items.length.toString()} items) stories`)
   );
+  logger.logToFile(`Processing (${items.length.toString()} items) stories`);
 
   for (let i = 0; i < items.length; i++) {
     log(
@@ -193,6 +203,11 @@ async function processItems(items, type) {
           i + 1
         ).toString()} of ${items.length.toString()} ${type} stories`
       )
+    );
+    logger.logToFile(
+      `Processing ${(
+        i + 1
+      ).toString()} of ${items.length.toString()} ${type} stories`
     );
 
     let currentStory = {};
@@ -208,13 +223,19 @@ async function processItems(items, type) {
           `Error fetching and saving item ${items[i].id}: ${error.message}`
         )
       );
+      logger.logToFile(
+        `Error fetching and saving item ${items[i].id}: ${error.message}`
+      );
     }
 
     log(chalk.green(`==> Processing comments...`));
+    logger.logToFile(`Processing comments...`);
+
     await processComments(type, currentStory);
   }
 
   log(chalk.blueBright(`=> Completed processing ${type} stories`));
+  logger.logToFile(`Completed processing ${type} stories`);
 }
 
 async function processComments(parentType, itemData) {
@@ -232,6 +253,7 @@ async function processComments(parentType, itemData) {
       }
     } catch (error) {
       log(chalk.red(`Error fetching comment: ${error.message}`));
+      logger.logToFile(`Error fetching comment: ${error.message}`);
     }
 
     if (
