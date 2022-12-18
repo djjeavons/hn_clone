@@ -1,5 +1,7 @@
 # Hacker News Clone
 
+can you see me.
+
 ## Contents
 
 [Introduction](#Introduction)  
@@ -51,11 +53,11 @@ As mentioned, there are two tables:
 
 There is a .env file required that contains the following keys and values.
 
-- POSTGRES_USER = _Your postgres user name_
-- POSTGRES_PASSWORD = _Your postgres password_
-- POSTGRES_HOST = _The host name/ip address of the postgres server_
-- POSTGRES_PORT = _The port of the postgres server_
-- POSTGRES_DATABASE = _The name of the database_
+- POSTGRES*USER = \_Your postgres user name*
+- POSTGRES*PASSWORD = \_Your postgres password*
+- POSTGRES*HOST = \_The host name/ip address of the postgres server*
+- POSTGRES*PORT = \_The port of the postgres server*
+- POSTGRES*DATABASE = \_The name of the database*
 - HN_ITEM_ROOT_URL = https://hacker-news.firebaseio.com/v0/item
 - HN_TOP_STORIES_URL = https://hacker-news.firebaseio.com/v0/topstories.json
 - HN_NEW_STORIES_URL = https://hacker-news.firebaseio.com/v0/newstories.json
