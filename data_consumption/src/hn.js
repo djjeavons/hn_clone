@@ -57,7 +57,7 @@ async function main() {
           );
         } else {
           const itemToRefresh = parseInt(program.args[1]);
-          refreshItem(itemToRefresh);
+          await refreshItem(itemToRefresh);
         }
         break;
 
