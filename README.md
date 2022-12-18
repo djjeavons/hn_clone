@@ -3,6 +3,7 @@
 ## Contents
 
 [Introduction](#Introduction)  
+&nbsp;&nbsp;&nbsp;&nbsp;[Data Consumption](#Data-Consumption)  
 [Environment Variables](#Environment-variables)
 
 ## Introduction
@@ -15,7 +16,9 @@ Finally, a web site, mobile app and possibly a desktop app will be created to pr
 
 The database, api consumption software, GraphQL and webserver will all be running on a Raspberry Pi for usage over a home network. It can of course be deployed to a public facing server at a later time.
 
-## Environment variables
+## Data Consumption
+
+### Environment variables
 
 There is a .env file required that contains the following keys.
 
