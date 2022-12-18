@@ -1,7 +1,5 @@
 # Hacker News Clone
 
-can you see me.
-
 ## Contents
 
 [Introduction](#Introduction)  
