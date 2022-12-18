@@ -34,7 +34,6 @@ async function main() {
         "ask",
         "show",
         "job",
-        "ALL",
       ])
     )
     .addOption(
