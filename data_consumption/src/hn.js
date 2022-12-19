@@ -119,15 +119,6 @@ async function getItems(type, latest) {
       `=> Start processing ${type} stories (latest set to ${latest})`
     )
   );
-  logger.logToFile(
-    `Start processing ${type} stories (latest set to ${latest})`
-  );
-
-  const totals = await item.getTotals();
-
-  logger.logToFile(
-    `Database currently contains ${totals.items} items and ${totals.comments} comments`
-  );
 
   let url = "";
   let typeToFilter = "story";
@@ -196,6 +187,8 @@ async function getItems(type, latest) {
     return;
   }
 
+  const totals = await item.getTotals();
+
   logger.logToFile(`Processing (${finalList.length.toString()} items) stories`);
   logger.logToFile(
     `Database currently contains ${totals.items} items and ${totals.comments} comments`
@@ -203,9 +196,11 @@ async function getItems(type, latest) {
 
   await processItems(finalList, typeToFilter);
 
+  const newTotals = await item.getTotals();
+
   logger.logToFile(`Completed processing ${type} stories`);
   logger.logToFile(
-    `Database currently contains ${totals.items} items and ${totals.comments} comments`
+    `Database currently contains ${newTotals.items} items and ${newTotals.comments} comments`
   );
 }
 
