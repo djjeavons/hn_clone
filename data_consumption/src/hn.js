@@ -196,9 +196,14 @@ async function getItems(type, latest) {
     return;
   }
 
+  logger.logToFile(`Processing (${finalList.length.toString()} items) stories`);
+  logger.logToFile(
+    `Database currently contains ${totals.items} items and ${totals.comments} comments`
+  );
+
   await processItems(finalList, typeToFilter);
 
-  logger.logToFile(`Processing (${finalList.length.toString()} items) stories`);
+  logger.logToFile(`Completed processing ${type} stories`);
   logger.logToFile(
     `Database currently contains ${totals.items} items and ${totals.comments} comments`
   );
@@ -243,7 +248,6 @@ async function processItems(items, type) {
   }
 
   log(chalk.blueBright(`=> Completed processing ${type} stories`));
-  logger.logToFile(`Completed processing ${type} stories`);
 }
 
 async function processComments(parentType, itemData) {
