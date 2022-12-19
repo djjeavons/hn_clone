@@ -46,6 +46,46 @@ async function itemMax(type) {
   return maxId;
 }
 
+async function totalItems() {
+  const result = await db.query(
+    'SELECT COUNT(id) As "totalItems" FROM "Items"'
+  );
+
+  let total = 0;
+
+  if (result.rows[0]) {
+    try {
+      total = parseInt(result.rows[0].totalItems);
+    } catch (err) {} // Do nothing, return 0
+  }
+
+  return total;
+}
+
+async function totalComments() {
+  const result = await db.query(
+    'SELECT COUNT(id) As "totalComments" FROM "Comments"'
+  );
+
+  let total = 0;
+
+  if (result.rows[0]) {
+    try {
+      total = parseInt(result.rows[0].totalComments);
+    } catch (err) {} // Do nothing, return 0
+  }
+
+  return total;
+}
+
+async function getTotals() {
+  const totals = {
+    items: await totalItems(),
+    comments: await totalComments(),
+  };
+  return totals;
+}
+
 async function updateItem(itemData) {
   const updateStatement =
     'UPDATE "Items" SET deleted = $2, type = $3, by = $4, time = $5, text = $6, dead = $7, parent = $8, url = $9, score = $10, title = $11, descendants = $12 WHERE id = $1';
@@ -82,3 +122,4 @@ async function executeStatement(statement, itemData) {
 
 exports.saveItem = saveItem;
 exports.itemMax = itemMax;
+exports.getTotals = getTotals;

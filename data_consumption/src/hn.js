@@ -99,6 +99,9 @@ async function refreshItem(itemId) {
     result = await item.saveItem(data);
   } catch (err) {
     log(chalk.redBright(`Error: ${err.message}`));
+    logger.logToFile(
+      `Refresh item ${itemId} failed with error: ${err.message}`
+    );
   }
 
   if (result === 0) {
@@ -118,6 +121,12 @@ async function getItems(type, latest) {
   );
   logger.logToFile(
     `Start processing ${type} stories (latest set to ${latest})`
+  );
+
+  const totals = await item.getTotals();
+
+  logger.logToFile(
+    `Database currently contains ${totals.items} items and ${totals.comments} comments`
   );
 
   let url = "";
@@ -188,13 +197,17 @@ async function getItems(type, latest) {
   }
 
   await processItems(finalList, typeToFilter);
+
+  logger.logToFile(`Processing (${finalList.length.toString()} items) stories`);
+  logger.logToFile(
+    `Database currently contains ${totals.items} items and ${totals.comments} comments`
+  );
 }
 
 async function processItems(items, type) {
   log(
     chalk.blueBright(`=> Processing (${items.length.toString()} items) stories`)
   );
-  logger.logToFile(`Processing (${items.length.toString()} items) stories`);
 
   for (let i = 0; i < items.length; i++) {
     log(
@@ -203,11 +216,6 @@ async function processItems(items, type) {
           i + 1
         ).toString()} of ${items.length.toString()} ${type} stories`
       )
-    );
-    logger.logToFile(
-      `Processing ${(
-        i + 1
-      ).toString()} of ${items.length.toString()} ${type} stories`
     );
 
     let currentStory = {};
