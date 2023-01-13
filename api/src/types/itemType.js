@@ -1,7 +1,13 @@
 const graphql = require("graphql");
+const { commentType } = require("./commentType");
 
-const { GraphQLObjectType, GraphQLInt, GraphQLBoolean, GraphQLString } =
-  graphql;
+const {
+  GraphQLObjectType,
+  GraphQLInt,
+  GraphQLBoolean,
+  GraphQLString,
+  GraphQLList,
+} = graphql;
 
 const ItemType = new GraphQLObjectType({
   name: "Item",
@@ -35,6 +41,10 @@ const ItemType = new GraphQLObjectType({
     time: {
       type: GraphQLInt,
       description: "Creation date of the item stored in unix time.",
+    },
+    comments: {
+      type: GraphQLList(commentType),
+      description: "Comments associated with this item.",
     },
   }),
 });

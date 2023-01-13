@@ -1,6 +1,6 @@
 const graphql = require("graphql");
 
-const { GraphQLObjectType, GraphQLInt, GraphQLString } = graphql;
+const { GraphQLObjectType, GraphQLInt, GraphQLString, GraphQLList } = graphql;
 
 const CommentType = new GraphQLObjectType({
   name: "Comment",
@@ -26,6 +26,10 @@ const CommentType = new GraphQLObjectType({
       type: GraphQLString,
       description:
         "The parent type of this comment, could be a comment, story, job, show etc.",
+    },
+    comments: {
+      type: GraphQLList(CommentType),
+      description: "The comments associated with this comment.",
     },
   }),
 });

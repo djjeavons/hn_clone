@@ -26,7 +26,47 @@ async function getItem(itemId) {
         title: result.rows[0].title == null ? "" : result.rows[0].title.trim(),
         descendants: result.rows[0].descendants,
         time: result.rows[0].time,
+        // Comments
+        comments: await getComments(itemId),
       };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getComments(itemId) {
+  try {
+    const result = await db.query(
+      `select  id
+        ,by
+        ,parentid
+        ,text
+        ,"time"
+        ,type
+        ,parenttype
+        from "Comments" 
+        where parentid = $1`,
+      [itemId]
+    );
+
+    if (result && result.rows.length > 0) {
+      const comments = result.rows.map((record) => {
+        return {
+          id: record.id,
+          by: record.by != null ? record.by.trim() : "",
+          parentId: record.parentid,
+          text: record.text != null ? record.text.trim() : "",
+          time: record.time,
+          type: record.type,
+          parentType: record.parenttype,
+          comments: getComments(record.id),
+        };
+      });
+
+      return comments;
     } else {
       return null;
     }

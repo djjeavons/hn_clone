@@ -17,6 +17,6 @@ app.use(
 
 app.listen(process.env.API_PORT, () => {
   console.log(
-    `🚀 Server listening at http://localhost/${process.env.API_ENDPOINT}:${process.env.API_PORT} 🚀`
+    `🚀 Server listening at http://localhost:${process.env.API_PORT}/${process.env.API_ENDPOINT} 🚀`
   );
 });
