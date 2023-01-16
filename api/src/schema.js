@@ -1,39 +1,60 @@
-// TODO:
-// 1. Add relationship between Item and Comment
-// 2. Resolve Item and Comment
-// 3. Look at recursive routine for resolving all comments for an Item including sub comments
-const graphql = require("graphql");
-const { itemType } = require("./types/itemType");
-const { getItem } = require("./lib/dal/item");
+const { buildSchema } = require("graphql");
 
-const { GraphQLObjectType, GraphQLSchema, GraphQLInt } = graphql;
+const typeDef = buildSchema(`#graphql
+  """ An item represents a Story, Ask, Show, or Job from Hacker News. """
+  type Item {
+    """ The unique identifier of this item. """
+    id: Int!
+    """ True if the item has been deleted. """
+    deleted: Boolean
+    """ The type of item, such as Story, Job, Poll. """
+    type: String
+    """ The name of the author. """
+    by: String
+    """ The main body of the item. """
+    text: String
+    """ True if the item is dead. """
+    dead: Boolean
+    """ The identifier of the items parent. Particularly useful for comments. """
+    parent: Int
+    """ The URL of the story. """
+    url: String
+    """ The items score or votes. """
+    score: Int
+    """ The title of the item. """
+    title: String
+    """ The total comment count. """
+    descendants: Int
+    """ Creation date of the item stored in unix time. """
+    time: Int
+    """ Comments associated with this item. """
+    comments: [Comment]
+  }
 
-const RootQuery = new GraphQLObjectType({
-  name: "HackerNewsQuery",
-  description: "Query the Hacker News database",
-  fields: {
-    getItem: {
-      type: itemType,
-      args: {
-        id: {
-          type: GraphQLInt,
-          description: "The unique identifier of the item to retrieve.",
-          require: true,
-        },
-      },
-      async resolve(parent, args) {
-        return await getItem(args.id);
-      },
-    },
-    // comment: {
-    //   type: commentType,
-    //   resolve(parent, args) {
-    //     return { id: 999, text: "comment test" };
-    //   },
-    // },
-  },
-});
+  """ A user comment """
+  type Comment {
+      """ The unique identifier of this item. """
+      id: Int!
+      """ The author of this comment. """
+      by: String 
+      """ The unique identifier of the parent of this comment, either another comment or a story. """
+      parentId: Int
+      """ The body of the comment. """
+      text: String
+      """ The creation date of the comment stored in unix time. """
+      time: Int
+      """ The type of this comment. """
+      type: String
+      """ The parent type of this comment, could be a comment, story, job or poll. """
+      parentType: String
+      """ Comments associated with this comment. """
+      comments: [Comment]
+  }
 
-module.exports = new GraphQLSchema({
-  query: RootQuery,
-});
+  """ Available queries that can be executed against the Hacker News database """
+  type Query {
+    getItem(id: Int!): Item
+  }
+`);
+
+module.exports = typeDef;

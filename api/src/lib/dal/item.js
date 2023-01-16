@@ -26,7 +26,6 @@ async function getItem(itemId) {
         title: result.rows[0].title == null ? "" : result.rows[0].title.trim(),
         descendants: result.rows[0].descendants,
         time: result.rows[0].time,
-        // Comments
         comments: await getComments(itemId),
       };
     } else {
@@ -37,7 +36,11 @@ async function getItem(itemId) {
   }
 }
 
+// Some form of pagination and limiting
+async function getItems() {}
+
 async function getComments(itemId) {
+  console.log("in get comments call");
   try {
     const result = await db.query(
       `select  id

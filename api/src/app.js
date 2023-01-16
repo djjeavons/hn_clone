@@ -2,21 +2,21 @@ const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const express = require("express");
 const { graphqlHTTP } = require("express-graphql");
-const schema = require("./schema");
+const typeDef = require("./schema");
+const resolvers = require("./resolvers");
 
 const app = express();
 
 app.use(
   `/${process.env.API_ENDPOINT}`,
   graphqlHTTP({
-    schema: schema,
+    schema: typeDef,
+    rootValue: resolvers,
     graphiql: true,
-    pretty: true,
   })
 );
 
-app.listen(process.env.API_PORT, () => {
-  console.log(
-    `🚀 Server listening at http://localhost:${process.env.API_PORT}/${process.env.API_ENDPOINT} 🚀`
-  );
-});
+app.listen(process.env.API_PORT);
+console.log(
+  `Server running at http://localhost:${process.env.API_PORT}/${process.env.API_ENDPOINT}`
+);
