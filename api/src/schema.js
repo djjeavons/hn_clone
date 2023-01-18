@@ -54,6 +54,7 @@ const typeDef = buildSchema(`#graphql
   """ Available queries that can be executed against the Hacker News database """
   type Query {
     getItem(id: Int!): Item
+    getItems(limit: Int, offset: Int): [Item]
   }
 `);
 

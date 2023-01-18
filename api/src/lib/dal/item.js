@@ -36,11 +36,46 @@ async function getItem(itemId) {
   }
 }
 
-// Some form of pagination and limiting
-async function getItems() {}
+// Return only items (no comments) paginated
+async function getItems(limit, offset) {
+  try {
+    const result = await db.query(
+      `SELECT
+        id, deleted, type, by, text, dead, parent, url, score, title, descendants, time
+      FROM
+        "Items"
+        ORDER BY id DESC
+        LIMIT $1 OFFSET $2
+        `,
+      [limit, offset]
+    );
+    if (result && result.rows.length > 0) {
+      const items = result.rows.map((record) => {
+        return {
+          id: record.id,
+          deleted: record.deleted,
+          type: record.type == null ? "" : record.type.trim(),
+          by: record.by == null ? "" : record.by.trim(),
+          text: record.text == null ? "" : record.text.trim(),
+          dead: record.dead,
+          parent: record.parent,
+          url: record.url,
+          score: record.score,
+          title: record.title == null ? "" : record.title.trim(),
+          descendants: record.descendants,
+          time: record.time,
+        };
+      });
+      return items;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function getComments(itemId) {
-  console.log("in get comments call");
   try {
     const result = await db.query(
       `select  id
@@ -79,3 +114,4 @@ async function getComments(itemId) {
 }
 
 exports.getItem = getItem;
+exports.getItems = getItems;
